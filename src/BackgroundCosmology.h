@@ -23,9 +23,17 @@ class BackgroundCosmology{
     double OmegaK;                  // Curvature density = 1 - OmegaM - OmegaR - OmegaNu - OmegaLambda
     double H0;                      // The Hubble parameter today H0 = 100h km/s/Mpc
 
-    // Start and end of x-integration (can be changed)
-    double x_start = Constants.x_start;
-    double x_end   = Constants.x_end;
+    // Neseccaries physcial constants from Utils
+    const double H0_over_h = Constants.H0_over_h;
+    const double k_b = Constants.k_b;
+    const double hbar = Constants.hbar;
+    const double c = Constants.c;
+    const double G = Constants.G;
+
+    // Start and end of x-integration, also number of points (can be changed)
+    const double x_start = Constants.x_start;
+    const double x_end   = Constants.x_end;
+    const double npts    = 100;
 
     // Splines to be made
     Spline eta_of_x_spline{"eta"};
@@ -59,7 +67,7 @@ class BackgroundCosmology{
     double dHpdx_of_x(double x) const;
     double ddHpddx_of_x(double x) const;
     double get_OmegaB(double x = 0.0) const; 
-    double get_OmegaM(double x = 0.0) const; 
+    double get_OmegaM(double x = 0.0) const;
     double get_OmegaR(double x = 0.0) const;
     double get_OmegaRtot(double x = 0.0) const; 
     double get_OmegaNu(double x = 0.0) const;

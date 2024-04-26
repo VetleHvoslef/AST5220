@@ -1,5 +1,12 @@
 #include "BackgroundCosmology.h"
 
+
+// Spørsmål: Hvor bør PI defineres fra cmath, i Utils.h under // Physical constants, kanskje mer // Mathematical constants:
+// - https://stackoverflow.com/questions/1727881/how-to-use-the-pi-constant-in-c
+// - https://stackoverflow.com/questions/6563810/m-pi-works-with-math-h-but-not-with-cmath-in-visual-studio
+// - _USE_MATH_DEFINES properly with cmath, men jeg er uvant med å bruke header filer
+// spør Kjell og co?
+
 //====================================================
 // Constructors
 //====================================================
@@ -20,12 +27,19 @@ BackgroundCosmology::BackgroundCosmology(
 {
 
   //=============================================================================
-  // TODO: Compute OmegaR, OmegaNu, OmegaLambda, H0, ...
+  // Compute OmegaR, OmegaNu, OmegaLambda, H0 (alle her er egentlig 0)
   //=============================================================================
-  //...
-  //...
-  //...
-  //...
+
+  H0 = h * H0_over_h;
+
+  // Check: Sjekk at alle omegene summer opp til 1
+  OmegaR = 2 * (pow(M_PI, 2.0) / 30.0) * (pow((k_b * TCMB), 4.0) / (pow(hbar, 3.0) * pow(c, 5.0))) * ((8.0 * M_PI * G) / (3 * pow(H0, 2.0)));
+  // Hvor skal dotten være for at den skal skjønne at det ikke er heltallsdivisjon? 8. kontra 8.0
+  OmegaNu = Neff * (7.0/8) * pow((4.0/11), (4.0/3)) * OmegaR;
+  OmegaK = 0;
+  OmegaLambda = 1 - (OmegaK + OmegaB + OmegaCDM + OmegaR + OmegaNu);
+
+  // Spørsmål: Hva er OmegaM i headeren?
 }
 
 //====================================================
@@ -38,9 +52,9 @@ void BackgroundCosmology::solve(){
     
   //=============================================================================
   // TODO: Set the range of x and the number of points for the splines
-  // For this Utils::linspace(x_start, x_end, npts) is useful
   //=============================================================================
-  Vector x_array;
+  Vector x_array = Utils::linspace(x_start, x_end, npts);
+
 
   // The ODE for deta/dx
   ODEFunction detadx = [&](double x, const double *eta, double *detadx){
@@ -65,6 +79,8 @@ void BackgroundCosmology::solve(){
   // ...
   // ...
 
+  // Også regn ut the age of the Universe her (se side 17, https://cmb.wintherscoming.no/pdfs/ast5220_milestone_1_2024.pdf)
+
   Utils::EndTiming("Eta");
 }
 
@@ -74,24 +90,19 @@ void BackgroundCosmology::solve(){
 
 double BackgroundCosmology::H_of_x(double x) const{
 
-  //=============================================================================
-  // TODO: Implement...
-  //=============================================================================
-  //...
-  //...
+  double H;
 
-  return 0.0;
+  H = H0 * sqrt((OmegaR + OmegaNu) * exp(-4.0 * x) + (OmegaB + OmegaCDM) * exp(-3.0 * x) + OmegaK * exp(-2.0 * x) + OmegaLambda);
+  return H;
 }
 
 double BackgroundCosmology::Hp_of_x(double x) const{
 
-  //=============================================================================
-  // TODO: Implement...
-  //=============================================================================
-  //...
-  //...
+  double H = H_of_x(x);
+  double H_p;
 
-  return 0.0;
+  H_p = exp(x) * H;
+  return H_p;
 }
 
 double BackgroundCosmology::dHpdx_of_x(double x) const{
