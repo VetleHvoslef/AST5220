@@ -30,6 +30,7 @@ OPTIONS += -D_SPLINE_WARNINGS_ON
 #=======================================================
 
 C = -O3 -g $(OPTIONS)
+# C = -O0 -g $(OPTIONS) -fsanitize=address # For debugging purposes
 
 #=======================================================
 

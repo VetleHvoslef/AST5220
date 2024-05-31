@@ -38,7 +38,7 @@ class Perturbations{
     Spline2D v_cdm_spline{"v_cdm_spline"};
     Spline2D v_b_spline{"v_b_spline"};
     Spline2D Phi_spline{"Phi_spline"};
-    Spline2D Pi_spline{"Pi_spline"};
+    Spline2D PI_spline{"Pi_spline"};
     Spline2D Psi_spline{"Psi_spline"};
    
     // Splines of source functions (ST for temperature; SE for polarization)
@@ -46,11 +46,13 @@ class Perturbations{
     Spline2D SE_spline{"SE_spline"};
     
     // Splines of mulipole quantities
-    // NB: If you use there you have to allocate the container first
-    // e.g. Theta_spline = std::vector<Spline2D>(n_ell_theta); before using it
+    // // NB: If you use these you have to allocate the container first
     std::vector<Spline2D> Theta_spline;
-    std::vector<Spline2D> Theta_p_spline;
-    std::vector<Spline2D> Nu_spline;
+    // std::vector<Spline2D> Theta_p_spline;
+    // std::vector<Spline2D> Nu_spline;
+    Spline2D Theta_0_spline{"Theta_0_spline"};
+    Spline2D Theta_1_spline{"Theta_1_spline"};
+    Spline2D Theta_2_spline{"Theta_2_spline"};
     
     //==========================================================
     // [1] Tight coupling ODE system
@@ -65,7 +67,7 @@ class Perturbations{
     int rhs_tight_coupling_ode(double x, double k, const double *y, double *dydx);
     
     // Compute the time when tight coupling ends
-    double get_tight_coupling_time(const double k) const;
+    std::pair<double,int> get_tight_coupling_time(const double k) const;
     
     //==========================================================
     // [2] The full ODE system 
@@ -118,7 +120,7 @@ class Perturbations{
     double get_v_b(const double x, const double k) const;
     double get_Phi(const double x, const double k) const;
     double get_Psi(const double x, const double k) const;
-    double get_Pi(const double x, const double k) const;
+    double get_PI(const double x, const double k) const;
     double get_Theta(const double x, const double k, const int ell) const;
     double get_Theta_p(const double x, const double k, const int ell) const;
     double get_Nu(const double x, const double k, const int ell) const;

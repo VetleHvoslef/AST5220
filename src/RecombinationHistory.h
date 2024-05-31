@@ -50,8 +50,9 @@ class RecombinationHistory{
 
     // Splines contained in this class
     Spline log_Xe_of_x_spline{"Xe"};
+    Spline log_ne_of_x_spline{"ne"};
     Spline tau_of_x_spline{"tau"}; 
-    Spline g_tilde_of_x_spline{"g"};  
+    Spline g_tilde_of_x_spline{"g"};
 
   public:
 
@@ -71,6 +72,7 @@ class RecombinationHistory{
     void output(const std::string filename) const;
 
     // Get functions that we must implement
+    double Tb_of_x(double x) const;
     double tau_of_x(double x) const;
     double dtaudx_of_x(double x) const;
     double ddtauddx_of_x(double x) const;

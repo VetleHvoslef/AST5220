@@ -21,7 +21,7 @@ int main(int argc, char **argv){
   double TCMB        = 2.7255;
 
   // Recombination parameters
-  double Yp          = 0.245;
+  double Yp          = 0.0; // Since I am a master student
 
   // Power-spectrum parameters
   double A_s         = 2.1e-9;
@@ -44,9 +44,6 @@ int main(int argc, char **argv){
   // Make sure you read the comments on the top of src/SupernovaFitting.h
   // mcmc_fit_to_supernova_data("data/supernovadata.txt", "results_supernovafitting.txt");
 
-  // Remove when module is completed
-  return 0;
-
   //=========================================================================
   // Module II
   //=========================================================================
@@ -59,8 +56,8 @@ int main(int argc, char **argv){
   // Output recombination quantities
   rec.output("recombination.txt");
   
-  // Remove when module is completed
-  return 0;
+  // // Remove when module is completed
+  // return 0;
 
   //=========================================================================
   // Module III
@@ -72,11 +69,15 @@ int main(int argc, char **argv){
   pert.info();
   
   // Output perturbation quantities
-  double kvalue = 0.01 / Constants.Mpc;
-  pert.output(kvalue, "perturbations_k0.01.txt");
+  // double kvalue_0 = 0.001 / Constants.Mpc;
+  double kvalue_1 = 0.01 / Constants.Mpc;
+  // double kvalue_2 = 0.1 / Constants.Mpc;
+  // pert.output(kvalue_0, "perturbations_k0.001.txt");
+  pert.output(kvalue_1, "perturbations_k0.01.txt");
+  // pert.output(kvalue_2, "perturbations_k0.1.txt");
   
-  // Remove when module is completed
-  return 0;
+  // // Remove when module is completed
+  // return 0;
   
   //=========================================================================
   // Module IV

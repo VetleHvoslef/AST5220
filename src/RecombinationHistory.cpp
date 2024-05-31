@@ -32,18 +32,23 @@ void RecombinationHistory::solve_number_density_electrons(){
   Utils::StartTiming("Xe");
   
   //=============================================================================
-  // TODO: Set up x-array and make arrays to store X_e(x) and n_e(x) on
+  // Set up x-array and make arrays to store X_e(x) and n_e(x) on
   //=============================================================================
   Vector x_array;
   Vector Xe_arr;
   Vector ne_arr;
+
+  // Spørsmål: Antar dette her?
+  x_array = Utils::linspace(x_start, x_end, npts_rec_arrays);
+  Xe_arr = Utils::linspace(x_start, x_end, npts_rec_arrays);
+  ne_arr = Utils::linspace(x_start, x_end, npts_rec_arrays);
 
   // Calculate recombination history
   bool saha_regime = true;
   for(int i = 0; i < npts_rec_arrays; i++){
 
     //==============================================================
-    // TODO: Get X_e from solving the Saha equation so
+    // Get X_e from solving the Saha equation so
     // implement the function electron_fraction_from_saha_equation
     //==============================================================
     auto Xe_ne_data = electron_fraction_from_saha_equation(x_array[i]);
@@ -52,29 +57,17 @@ void RecombinationHistory::solve_number_density_electrons(){
     const double Xe_current = Xe_ne_data.first;
     const double ne_current = Xe_ne_data.second;
 
+    // Something is very wrong here, is not in Saha regmie for i = 0
+
     // Are we still in the Saha regime?
     if(Xe_current < Xe_saha_limit)
       saha_regime = false;
 
     if(saha_regime){
-      
-      //=============================================================================
-      // TODO: Store the result we got from the Saha equation
-      //=============================================================================
-      //...
-      //...
-
+      Xe_arr[i] = Xe_current;
+      ne_arr[i] = ne_current;
     } else {
-
-      //==============================================================
-      // TODO: Compute X_e from current time til today by solving 
-      // the Peebles equation (NB: if you solve all in one go remember to
-      // exit the for-loop!)
-      // Implement rhs_peebles_ode
-      //==============================================================
-      //...
-      //...
-
+      
       // The Peebles ODE equation
       ODESolver peebles_Xe_ode;
       ODEFunction dXedx = [&](double x, const double *Xe, double *dXedx){
@@ -82,20 +75,39 @@ void RecombinationHistory::solve_number_density_electrons(){
       };
       
       //=============================================================================
-      // TODO: Set up IC, solve the ODE and fetch the result 
+      // Set up IC, solve the ODE and fetch the result 
       //=============================================================================
-      //...
-      //...
-    
+
+      Vector x_peebles_array{x_array[i-1], x_array[i]};
+      Vector Xe_ic{Xe_arr[i-1]};
+      peebles_Xe_ode.solve(dXedx, x_peebles_array, Xe_ic);
+
+      double n_H;
+      double n_b;
+      double a = exp(x_array[i]);
+
+      // Fetch cosmological parameters
+      const double OmegaB      = cosmo->get_OmegaB();
+      const double H0          = cosmo->get_H0();
+
+      // Physical constants
+      const double G           = Constants.G;
+      const double m_H         = Constants.m_H;
+
+      n_b = (1 - Yp) * ((3.0 * pow(H0, 2.0) * OmegaB) / (8.0 * M_PI * G * m_H * pow(a, 3.0)));
+      n_H = (1 - Yp) * n_b;
+
+      Xe_arr[i] = peebles_Xe_ode.get_final_data_by_component(0);
+      ne_arr[i] = Xe_arr[i] * n_H;
     }
   }
 
-  //=============================================================================
-  // TODO: Spline the result. Implement and make sure the Xe_of_x, ne_of_x 
-  // functions are working
-  //=============================================================================
-  //...
-  //...
+  Vector log_Xe_arr = log(Xe_arr);
+  Vector log_ne_arr = log(ne_arr);
+
+  // log_Xe_of_x_spline.create(x_array, log(Xe_arr)); // Hvorfor funker ikke dette?
+  log_Xe_of_x_spline.create(x_array, log_Xe_arr);
+  log_ne_of_x_spline.create(x_array, log_ne_arr);
 
   Utils::EndTiming("Xe");
 }
@@ -109,27 +121,35 @@ std::pair<double,double> RecombinationHistory::electron_fraction_from_saha_equat
   // Physical constants
   const double k_b         = Constants.k_b;
   const double G           = Constants.G;
+  const double c           = Constants.c;
   const double m_e         = Constants.m_e;
   const double hbar        = Constants.hbar;
   const double m_H         = Constants.m_H;
   const double epsilon_0   = Constants.epsilon_0;
-  const double H0_over_h   = Constants.H0_over_h;
 
   // Fetch cosmological parameters
-  //const double OmegaB      = cosmo->get_OmegaB();
-  //...
-  //...
+  const double OmegaB      = cosmo->get_OmegaB();
+  const double TCMB        = cosmo->get_TCMB();
+  const double H0          = cosmo->get_H0();
 
   // Electron fraction and number density
   double Xe = 0.0;
   double ne = 0.0;
-  
-  //=============================================================================
-  // TODO: Compute Xe and ne from the Saha equation
-  //=============================================================================
-  //...
-  //...
 
+  // Variables for the equation
+  double Tb;
+  double quad_constant;
+  double n_b;
+  double n_H;
+
+
+  Tb = TCMB/a;
+  n_b = (1 - Yp) * ((3.0 * pow(H0, 2.0) * OmegaB) / (8.0 * M_PI * G * m_H * pow(a, 3.0)));
+  quad_constant = (1/n_b) * pow(((m_e * Tb * k_b) / (2.0 * M_PI * pow(hbar, 2.0))), 3.0/2.0) * exp(-epsilon_0/(Tb * k_b));
+  Xe = (2.0 * quad_constant)/(quad_constant + sqrt(quad_constant * quad_constant + 4.0 * quad_constant));
+  
+  n_H = (1 - Yp) * n_b;
+  ne = Xe * n_H;
   return std::pair<double,double>(Xe, ne);
 }
 
@@ -154,17 +174,37 @@ int RecombinationHistory::rhs_peebles_ode(double x, const double *Xe, double *dX
   const double epsilon_0   = Constants.epsilon_0;
 
   // Cosmological parameters
-  // const double OmegaB      = cosmo->get_OmegaB();
-  // ...
-  // ...
+  const double OmegaB      = cosmo->get_OmegaB();
+  const double TCMB        = cosmo->get_TCMB();
+  const double H           = cosmo->H_of_x(x);
+  const double H0          = cosmo->get_H0();
 
-  //=============================================================================
-  // TODO: Write the expression for dXedx
-  //=============================================================================
-  //...
-  //...
+
+  // Variables for the equation
+  double Tb;
+  double phi_2_Tb;
+  double alpha_2_Tb;
+  double beta_Tb;
+  double beta_2_Tb;
+  double n_b;
+  double n_H;
+  double n_1s;
+  double lambda_alpha;
+  double Cr_Tb;
+
+
+  Tb = TCMB/a;
+  phi_2_Tb = 0.488 * log(epsilon_0 / (k_b * Tb));
+  alpha_2_Tb = (8.0 / sqrt(3.0 * M_PI)) * c * sigma_T * sqrt(epsilon_0 / (k_b * Tb)) * phi_2_Tb;
+  beta_Tb = alpha_2_Tb * pow((m_e * k_b * Tb) / (2.0 * M_PI * pow(hbar, 2.0)), 3.0/2.0) * exp(-(epsilon_0 / (k_b * Tb)));
+  beta_2_Tb = alpha_2_Tb * pow((m_e * k_b * Tb) / (2.0 * M_PI * pow(hbar, 2.0)), 3.0/2.0) * exp(-(epsilon_0 / (4.0 * k_b * Tb)));
+  n_b = (1 - Yp) * ((3.0 * pow(H0, 2.0) * OmegaB) / (8.0 * M_PI * G * m_H * pow(a, 3.0)));
+  n_H = (1 - Yp) * n_b;
+  n_1s = (1 - X_e) * n_H;
+  lambda_alpha = H * (pow((3.0 * epsilon_0), 3.0) / (pow(8.0 * M_PI, 2.0) * pow(c, 3.0) * pow(hbar, 3.0) * n_1s));
+  Cr_Tb = (lambda_2s1s + lambda_alpha) / (lambda_2s1s + lambda_alpha + beta_2_Tb);
   
-  dXedx[0] = 0.0;
+  dXedx[0] = ((Cr_Tb) / H) * (beta_Tb * (1 - X_e) - n_H * alpha_2_Tb * X_e * X_e);
 
   return GSL_SUCCESS;
 }
@@ -179,34 +219,73 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
 
   // Set up x-arrays to integrate over. We split into three regions as we need extra points in reionisation
   const int npts = 1000;
+  Vector x_reverse_array = Utils::linspace(x_end, x_start, npts);
   Vector x_array = Utils::linspace(x_start, x_end, npts);
+  Vector tau_array;
+  Vector g_tilde_array = Utils::linspace(x_start, x_end, npts);
+  ODESolver ode;
 
   // The ODE system dtau/dx, dtau_noreion/dx and dtau_baryon/dx
   ODEFunction dtaudx = [&](double x, const double *tau, double *dtaudx){
+    // Physical constants in SI units
+    const double c           = Constants.c;
+    const double sigma_T     = Constants.sigma_T;
 
-    //=============================================================================
-    // TODO: Write the expression for dtaudx
-    //=============================================================================
-    //...
-    //...
+    // Cosmological parameters
+    const double H           = cosmo->H_of_x(x);
+
+    double ne                = ne_of_x(x);
 
     // Set the derivative for photon optical depth
-    dtaudx[0] = 0.0;
+    dtaudx[0] = -((c * ne * sigma_T)/H);
 
     return GSL_SUCCESS;
   };
 
   //=============================================================================
-  // TODO: Set up and solve the ODE and make tau splines
+  // Set up and solve the ODE and make tau splines
   //=============================================================================
-  //...
-  //...
+  Vector tau_ic{0.0};
+  ode.solve(dtaudx, x_reverse_array, tau_ic);
+  tau_array = ode.get_data_by_component(0);
+  std::reverse(tau_array.begin(), tau_array.end());
+
+  tau_of_x_spline.create(x_array, tau_array);
+
 
   //=============================================================================
-  // TODO: Compute visibility functions and spline everything
+  // Compute visibility functions and spline everything
   //=============================================================================
-  //...
-  //...
+
+  for (int i=0; i < npts; i++){
+    g_tilde_array[i] = -dtaudx_of_x(x_array[i]) * exp(-tau_of_x(x_array[i]));
+  }
+  g_tilde_of_x_spline.create(x_array, g_tilde_array);
+
+  // Husk å skrive sound horizon
+  // TODO: Fortsett her
+  // ODEFunction dsdx = [&](double x, const double *s, double *dsdx){
+  //   // Physical constants in SI units
+  //   const double c           = Constants.c;
+  //   const double sigma_T     = Constants.sigma_T;
+
+  //   // Cosmological parameters
+  //   const double H           = cosmo->H_of_x(x);
+
+  //   double ne                = ne_of_x(x);
+
+  //   // Set the derivative for photon optical depth
+  //   dsdx[0] = -((c * ne * sigma_T)/H);
+
+  //   return GSL_SUCCESS;
+  // };
+
+  // Vector tau_ic{0.0};
+  // ode.solve(dtaudx, x_reverse_array, tau_ic);
+  // tau_array = ode.get_data_by_component(0);
+  // std::reverse(tau_array.begin(), tau_array.end());
+
+  // tau_of_x_spline.create(x_array, tau_array);
 
   Utils::EndTiming("opticaldepth");
 }
@@ -215,31 +294,21 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
 // Get methods
 //====================================================
 
+double RecombinationHistory::Tb_of_x(double x) const{
+  const double TCMB = cosmo->get_TCMB(x);
+  return TCMB/exp(x);
+}
+
 double RecombinationHistory::tau_of_x(double x) const{
   return tau_of_x_spline(x);
 }
 
 double RecombinationHistory::dtaudx_of_x(double x) const{
-
-  //=============================================================================
-  // TODO: Implement. Either from the tau-spline tau_of_x_spline.deriv_(x) or 
-  // from a separate spline if you choose to do this
-  //=============================================================================
-  //...
-  //...
-
-  return 0.0;
+  return tau_of_x_spline.deriv_x(x);
 }
 
 double RecombinationHistory::ddtauddx_of_x(double x) const{
-
-  //=============================================================================
-  // TODO: Implement
-  //=============================================================================
-  //...
-  //...
-
-  return 0.0;
+  return tau_of_x_spline.deriv_xx(x);
 }
 
 double RecombinationHistory::g_tilde_of_x(double x) const{
@@ -247,47 +316,19 @@ double RecombinationHistory::g_tilde_of_x(double x) const{
 }
 
 double RecombinationHistory::dgdx_tilde_of_x(double x) const{
-
-  //=============================================================================
-  // TODO: Implement
-  //=============================================================================
-  //...
-  //...
-
-  return 0.0;
+  return g_tilde_of_x_spline.deriv_x(x);
 }
 
 double RecombinationHistory::ddgddx_tilde_of_x(double x) const{
-
-  //=============================================================================
-  // TODO: Implement
-  //=============================================================================
-  //...
-  //...
-
-  return 0.0;
+  return g_tilde_of_x_spline.deriv_xx(x);
 }
 
 double RecombinationHistory::Xe_of_x(double x) const{
-
-  //=============================================================================
-  // TODO: Implement
-  //=============================================================================
-  //...
-  //...
-
-  return 0.0;
+  return exp(log_Xe_of_x_spline(x));
 }
 
 double RecombinationHistory::ne_of_x(double x) const{
-
-  //=============================================================================
-  // TODO: Implement
-  //=============================================================================
-  //...
-  //...
-
-  return 0.0;
+  return exp(log_ne_of_x_spline(x));
 }
 
 double RecombinationHistory::get_Yp() const{
