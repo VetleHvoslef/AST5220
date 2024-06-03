@@ -88,7 +88,7 @@ void PowerSpectrum::generate_bessel_function_splines(){
       z = z_array[iz];
       j_ell_array[iz] = Utils::j_ell(ell, z);
     }
-    j_ell_splines[i].create(z_array, j_ell_array); // Riktig vei? Sjekk, Spør Hans
+    j_ell_splines[i].create(z_array, j_ell_array);
   }
 
   Utils::EndTiming("besselspline");
@@ -99,7 +99,7 @@ void PowerSpectrum::generate_bessel_function_splines(){
 // source function
 //====================================================
 
-Vector2D PowerSpectrum::line_of_sight_integration_single(
+Vector2D PowerSpectrum::line_of_sight_integration_single(// Dette kan være feil
     Vector & k_array, 
     std::function<double(double,double)> &source_function){
   Utils::StartTiming("lineofsight");
@@ -207,21 +207,20 @@ Vector PowerSpectrum::solve_for_cell( // C_ell til neste gang :)
 
   for (int iell=0; iell < nells; iell++){
     double C_ell_k = 0.0;
-    double delta_k_ik;
-    double k_minus_1;
-    double k;
-    double f_k_minus_1;
-    double f_k;
 
     // Integrate over k (trapizodial rule)
     for (int ik=1; ik < log_k_array.size(); ik++){
+      double delta_k_ik;
+      double k_minus_1;
+      double k;
+      double f_k_minus_1;
+      double f_k;
       k = exp(log_k_array[ik]);
       k_minus_1 = exp(log_k_array[ik - 1]);
       delta_k_ik = log_k_array[ik] - log_k_array[ik - 1];
 
-      // Spørsmål Hans
-      f_k_minus_1 = (A_s * pow(k_minus_1 / kpivot_mpc, n_s - 1) * thetaT_ell_of_k_spline[iell](k_minus_1) * thetaT_ell_of_k_spline[iell](k_minus_1));
-      f_k = (A_s * pow(k / kpivot_mpc, n_s - 1) * thetaT_ell_of_k_spline[iell](k) * thetaT_ell_of_k_spline[iell](k));
+      f_k_minus_1 = primordial_power_spectrum(k_minus_1) * f_ell_spline[iell](k_minus_1) * g_ell_spline[iell](k_minus_1);
+      f_k = primordial_power_spectrum(k) * f_ell_spline[iell](k) * g_ell_spline[iell](k);
       
       C_ell_k = C_ell_k + ((f_k_minus_1 + f_k) / 2.0) * delta_k_ik;
     }
@@ -246,7 +245,7 @@ double PowerSpectrum::primordial_power_spectrum(const double k) const{
 double PowerSpectrum::get_matter_power_spectrum(const double x, const double k_mpc) const{
   double pofk = 0.0;
   double c = Constants.c;
-  double OmegaM0 = cosmo->get_OmegaM();
+  double OmegaM0 = cosmo->get_OmegaM(); // Dette kan være feil
   double Phi = pert->get_Phi(x, k_mpc);
   double H0 = cosmo->get_H0();
   double a = exp(x);
@@ -286,8 +285,8 @@ void PowerSpectrum::output(std::string filename) const{
   auto print_data = [&] (const double ell) {
     double normfactor  = (ell * (ell+1)) / (2.0 * M_PI) * pow(1e6 * cosmo->get_TCMB(), 2);
     double normfactorN = (ell * (ell+1)) / (2.0 * M_PI) 
-      * pow(1e6 * cosmo->get_TCMB() *  pow(4.0/11.0, 1.0/3.0), 2);
-    double normfactorL = (ell * (ell+1)) * (ell * (ell+1)) / (2.0 * M_PI);
+      * pow(1e6 * cosmo->get_TCMB() *  pow(4.0/11.0, 1.0/3.0), 2); // Dette her blir ikke brukt?
+    double normfactorL = (ell * (ell+1)) * (ell * (ell+1)) / (2.0 * M_PI); // Dette her blir ikke brukt?
     fp << ell                                 << " ";
     fp << cell_TT_spline( ell ) * normfactor  << " ";
     // if(Constants.polarization){

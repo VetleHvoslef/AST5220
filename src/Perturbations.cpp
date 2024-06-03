@@ -466,15 +466,15 @@ void Perturbations::compute_source_functions(){
       const double dPI_eqdx = PI_spline.deriv_x(x, k);
       const double ddPI_eqddx = PI_spline.deriv_xx(x, k);
 
-      // Kan være feil
       const double dHpg_tilde_v_bdx = dHpdx * g_tilde * v_b + Hp * (dgdx_tilde * v_b + g_tilde * dv_bdx);
       const double dHpdHpg_tildePIddx = (dHpdx * dHpdx + Hp * ddHpddx) * g_tilde * PI_eq +
                                         3.0 * Hp * dHpdx * (dgdx_tilde * PI_eq + g_tilde * dPI_eqdx) +
                                         Hp * Hp * (ddgddx_tilde * PI_eq + 2.0 * dgdx_tilde * dPI_eqdx + g_tilde * ddPI_eqddx);
 
       // Temperatur source
-      // Kan være feil
-      ST_array[index] = g_tilde * (Theta_0 + Psi + (1.0/4.0) * PI_eq) + exp(-tau) * (dPsidx - dPhidx) - (1.0 / (c * k)) * dHpg_tilde_v_bdx + 
+      ST_array[index] = g_tilde * (Theta_0 + Psi + (1.0/4.0) * PI_eq) + 
+                        exp(-tau) * (dPsidx - dPhidx) -
+                        (1.0 / (c * k)) * dHpg_tilde_v_bdx + 
                         (3.0 / (4.0 * c * c * k * k)) * dHpdHpg_tildePIddx;
 
       // // Polarization source
