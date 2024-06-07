@@ -28,11 +28,11 @@ class PowerSpectrum {
     double kpivot_mpc = 0.05;
 
     // The k-values we compute Theta_ell(k) etc. for
-    const int n_k      = 100; // Skal være 5000
+    const int n_k      = 5000; // Skal være 5000
     const double k_min = Constants.k_min;
     const double k_max = Constants.k_max;
 
-    const int n_x        = 1000; // Skal være 1800
+    const int n_x        = 1800; // Skal være 1800
     const double x_start = Constants.x_start;
     const double x_end   = Constants.x_end;
     

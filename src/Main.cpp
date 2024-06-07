@@ -5,6 +5,28 @@
 #include "PowerSpectrum.h"
 #include "SupernovaFitting.h"
 
+// Test-suite, som er bygget opp på samme måte som denne main filen
+// tester for hver milestone og return 0.0 for hver milestone (eller
+// så kan den outputte not implementet for hver milestone som kommer
+// hvis computed returnerer 0.0 så skal den si not implementet)
+
+// Milestone 1:
+// - Fjern noen overflødige ting fra headeren (eller forklar hvorfor de 
+// skal være med)
+// - Bytt navn på omega-ene, alle skal være subscript 0
+
+// Milestone 2:
+// ...
+
+// Milestone 3:
+// - få koden til å fungerer hvis man bare setter polarization og neutrinos as false
+// så skal indekseringene fungerer, (kanskje setter alle de greiene til null, så man kan 
+// hente dem ut) eller bare ikke bruke dem i det hele tatt, en av to
+
+// Milestone 4:
+// - legg til i utils en trapez integral rutine, tar inn en funksjon (skriv et eksempel
+// [på samme form som den funksjonen som tar inn en source function])
+
 int main(int argc, char **argv){
   Utils::StartTiming("Everything");
 
@@ -82,6 +104,7 @@ int main(int argc, char **argv){
   // double kvalue_0 = 0.001 / Constants.Mpc;
   double kvalue_1 = 0.01 / Constants.Mpc;
   // double kvalue_2 = 0.1 / Constants.Mpc;
+  
   // pert.output(kvalue_0, "perturbations_k0.001.txt");
   pert.output(kvalue_1, "perturbations_k0.01.txt");
   // pert.output(kvalue_2, "perturbations_k0.1.txt");
@@ -97,8 +120,13 @@ int main(int argc, char **argv){
   power.solve();
   power.output("cells.txt");
   
-  // Remove when module is completed
-  return 0;
+  // power.output("cells_sw.txt");
+  // power.output("cells_isw.txt");
+  // power.output("cells_doppler.txt");
+  // power.output("cells_polarization.txt");
+  
+  // // Remove when module is completed
+  // return 0;
 
   Utils::EndTiming("Everything");
 }

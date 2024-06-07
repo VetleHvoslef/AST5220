@@ -116,7 +116,6 @@ Vector2D PowerSpectrum::line_of_sight_integration_single(// Dette kan være feil
     // given value of k
     //=============================================================================
     double k = k_array[ik];
-    double F_ell_k = 0.0;
     double eta_0 = cosmo->eta_of_x(x_end);
     double delta_x_ix;
     double x_minus_1;
@@ -126,6 +125,8 @@ Vector2D PowerSpectrum::line_of_sight_integration_single(// Dette kan være feil
 
     for (int iell=0; iell < ells.size(); iell++){
       // Integrate over x (trapizodial rule)
+      double F_ell_k = 0.0;
+
       for (int ix=1; ix < x_array.size(); ix++){
         x = x_array[ix];
         x_minus_1 = x_array[ix - 1];
@@ -245,8 +246,9 @@ double PowerSpectrum::primordial_power_spectrum(const double k) const{
 double PowerSpectrum::get_matter_power_spectrum(const double x, const double k_mpc) const{
   double pofk = 0.0;
   double c = Constants.c;
-  double OmegaM0 = cosmo->get_OmegaM(); // Dette kan være feil
-  double Phi = pert->get_Phi(x, k_mpc);
+  double OmegaM0 = cosmo->get_OmegaM();
+  double k = k_mpc / Constants.Mpc;
+  double Phi = pert->get_Phi(x, k);
   double H0 = cosmo->get_H0();
   double a = exp(x);
   double delta_M;
@@ -254,9 +256,9 @@ double PowerSpectrum::get_matter_power_spectrum(const double x, const double k_m
   //=============================================================================
   // Compute the matter power spectrum
   //=============================================================================
-  delta_M = (c * c * k_mpc * k_mpc * Phi) / ((3.0 / 2.0) * OmegaM0 * pow(a, -1.0) * H0 * H0);
+  delta_M = (c * c * k * k * Phi) / ((3.0 / 2.0) * OmegaM0 * pow(a, -1.0) * H0 * H0);
 
-  pofk = pow(std::abs(delta_M), 2.0) * primordial_power_spectrum(k_mpc);
+  pofk = pow(std::abs(delta_M), 2.0) * primordial_power_spectrum(k) * 2.0 * M_PI * M_PI / pow(k, 3.0);
   return pofk;
 }
 
@@ -296,7 +298,17 @@ void PowerSpectrum::output(std::string filename) const{
     fp << "\n";
   };
   std::for_each(ellvalues.begin(), ellvalues.end(), print_data);
+
+  std::ofstream fp_k("functions_of_k.txt");
+  auto log_k_values = Utils::linspace(log(k_min), log(k_max), n_k);
+  auto kvalues = exp(log_k_values);
+  auto print_k_data = [&] (const double k) {
+    fp_k << k                                                   << " ";
+    fp_k << thetaT_ell_of_k_spline[0](k)                        << " "; // Indeks 0, ell 2
+    fp_k << thetaT_ell_of_k_spline[10](k)                       << " "; // Indeks 10, ell 20
+    fp_k << thetaT_ell_of_k_spline[20](k)                       << " "; // Indeks 20, ell 120
+    fp_k << get_matter_power_spectrum(0.0, k * Constants.Mpc)   << " ";
+    fp_k << "\n";
+  };
+  std::for_each(kvalues.begin(), kvalues.end(), print_k_data);
 }
-
-
-// output greier, for gitte ell verdier og over k

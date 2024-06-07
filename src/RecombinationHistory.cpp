@@ -36,11 +36,13 @@ void RecombinationHistory::solve_number_density_electrons(){
   //=============================================================================
   Vector x_array;
   Vector Xe_arr;
+  Vector Xe_Saha_arr;
   Vector ne_arr;
 
   // Spørsmål: Antar dette her?
   x_array = Utils::linspace(x_start, x_end, npts_rec_arrays);
   Xe_arr = Utils::linspace(x_start, x_end, npts_rec_arrays);
+  Xe_Saha_arr = Utils::linspace(x_start, x_end, npts_rec_arrays);
   ne_arr = Utils::linspace(x_start, x_end, npts_rec_arrays);
 
   // Calculate recombination history
@@ -57,7 +59,12 @@ void RecombinationHistory::solve_number_density_electrons(){
     const double Xe_current = Xe_ne_data.first;
     const double ne_current = Xe_ne_data.second;
 
-    // Something is very wrong here, is not in Saha regmie for i = 0
+    // For finding out what the Saha predicts
+    if (Xe_current >= 0.0000186696){ // 0.0000186696 is ten times smaller than the last value of the Peebles solution
+      Xe_Saha_arr[i] = Xe_current;
+    } else {
+      Xe_Saha_arr[i] = 0.0000186696;
+    }
 
     // Are we still in the Saha regime?
     if(Xe_current < Xe_saha_limit)
@@ -104,10 +111,12 @@ void RecombinationHistory::solve_number_density_electrons(){
 
   Vector log_Xe_arr = log(Xe_arr);
   Vector log_ne_arr = log(ne_arr);
+  Vector log_Xe_Saha_arr = log(Xe_Saha_arr);
 
   // log_Xe_of_x_spline.create(x_array, log(Xe_arr)); // Hvorfor funker ikke dette?
   log_Xe_of_x_spline.create(x_array, log_Xe_arr);
   log_ne_of_x_spline.create(x_array, log_ne_arr);
+  log_Xe_Saha_of_x_spline.create(x_array, log_Xe_Saha_arr);
 
   Utils::EndTiming("Xe");
 }
@@ -262,31 +271,42 @@ void RecombinationHistory::solve_for_optical_depth_tau(){
   }
   g_tilde_of_x_spline.create(x_array, g_tilde_array);
 
-  // Husk å skrive sound horizon
-  // TODO: Fortsett her
-  // ODEFunction dsdx = [&](double x, const double *s, double *dsdx){
-  //   // Physical constants in SI units
-  //   const double c           = Constants.c;
-  //   const double sigma_T     = Constants.sigma_T;
 
-  //   // Cosmological parameters
-  //   const double H           = cosmo->H_of_x(x);
+  ODEFunction dsdx = [&](double x, const double *s, double *dsdx){
+    // Physical constants in SI units
+    const double c          = Constants.c;
 
-  //   double ne                = ne_of_x(x);
+    // Cosmological parameters
+    const double Hp         = cosmo->Hp_of_x(x);
+    const double OmegaR0    = cosmo->get_OmegaR();
+    const double OmegaB0    = cosmo->get_OmegaB();
 
-  //   // Set the derivative for photon optical depth
-  //   dsdx[0] = -((c * ne * sigma_T)/H);
+    double a = exp(x);
+    double R;
+    double c_s;
 
-  //   return GSL_SUCCESS;
-  // };
+    // Set the derivative for photon optical depth
+    R = (4.0 * OmegaR0) / (3.0 * OmegaB0 * a);
+    c_s = c * std::sqrt(R / (3.0 * (1.0 + R)));
+    dsdx[0] = c_s/Hp;
 
-  // Vector tau_ic{0.0};
-  // ode.solve(dtaudx, x_reverse_array, tau_ic);
-  // tau_array = ode.get_data_by_component(0);
-  // std::reverse(tau_array.begin(), tau_array.end());
+    return GSL_SUCCESS;
+  };
 
-  // tau_of_x_spline.create(x_array, tau_array);
+  const double c          = Constants.c;
+  const double Hp_ini     = cosmo->Hp_of_x(x_start);
+  const double OmegaR0    = cosmo->get_OmegaR();
+  const double OmegaB0    = cosmo->get_OmegaB();
+  const double a          = exp(x_start);
 
+  double R_ini = (4.0 * OmegaR0) / (3.0 * OmegaB0 * a);
+  double c_s_ini = c * std::sqrt(R_ini / (3.0 * (1.0 + R_ini)));
+  double s_h_ini = c_s_ini / Hp_ini;
+  Vector s_h_ic{s_h_ini};
+  ode.solve(dsdx, x_array, s_h_ic);
+  auto s_h_array = ode.get_data_by_component(0);
+
+  sound_horizion_of_x_spline.create(x_array, s_h_array);
   Utils::EndTiming("opticaldepth");
 }
 
@@ -327,6 +347,10 @@ double RecombinationHistory::Xe_of_x(double x) const{
   return exp(log_Xe_of_x_spline(x));
 }
 
+double RecombinationHistory::Xe_Saha_of_x(double x) const{
+  return exp(log_Xe_Saha_of_x_spline(x));
+}
+
 double RecombinationHistory::ne_of_x(double x) const{
   return exp(log_ne_of_x_spline(x));
 }
@@ -341,7 +365,9 @@ double RecombinationHistory::get_Yp() const{
 void RecombinationHistory::info() const{
   std::cout << "\n";
   std::cout << "Info about recombination/reionization history class:\n";
-  std::cout << "Yp:          " << Yp          << "\n";
+  std::cout << "Yp:              " << Yp          << "\n";
+  std::cout << "x_recombination: " << -6.98       << "\n";
+  std::cout << "r_s:             " << sound_horizion_of_x_spline(-6.98) << "\n";           
   std::cout << std::endl;
 } 
 
@@ -358,6 +384,7 @@ void RecombinationHistory::output(const std::string filename) const{
   auto print_data = [&] (const double x) {
     fp << x                    << " ";
     fp << Xe_of_x(x)           << " ";
+    fp << Xe_Saha_of_x(x)      << " ";
     fp << ne_of_x(x)           << " ";
     fp << tau_of_x(x)          << " ";
     fp << dtaudx_of_x(x)       << " ";
