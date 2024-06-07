@@ -34,7 +34,7 @@ for i in range(3):
 plt.legend()
 plt.xlabel("x")
 if save_fig:
-    plt.savefig()
+    plt.savefig(r"Plots\Milestone_3\deltas.pdf")
 plt.show()
 
 
@@ -46,7 +46,7 @@ for i in range(3):
 plt.legend()
 plt.xlabel("x")
 if save_fig:
-    plt.savefig()
+    plt.savefig(r"Plots\Milestone_3\v_ene.pdf")
 plt.show()
 
 
@@ -56,7 +56,7 @@ for i in range(3):
 plt.legend()
 plt.xlabel("x")
 if save_fig:
-    plt.savefig()
+    plt.savefig(r"Plots\Milestone_3\Theta_2.pdf")
 plt.show()
 
 plt.title("Psi")
@@ -65,7 +65,7 @@ for i in range(3):
 plt.legend()
 plt.xlabel("x")
 if save_fig:
-    plt.savefig()
+    plt.savefig(r"Plots\Milestone_3\Psi.pdf")
 plt.show()
 
 plt.title("Phi + Psi")
@@ -74,5 +74,5 @@ for i in range(3):
 plt.legend()
 plt.xlabel("x")
 if save_fig:
-    plt.savefig()
+    plt.savefig(r"Plots\Milestone_3\Phi_plus_Psi.pdf")
 plt.show()

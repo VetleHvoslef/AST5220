@@ -46,7 +46,7 @@ import scipy.constants as const
 # and the posterior PDF
 
 x, eta, time, Hp, dHpdx, ddHpddx, OmegaB, OmegaCDM, OmegaLambda, OmegaR, OmegaNu, OmegaK = np.loadtxt("cosmology.txt", unpack=True)
-chi2, h_fitting, OmegaM_fitting, OmegaK_fitting = np.loadtxt("results_supernovafitting.txt", unpack=True, skiprows=1)
+# chi2, h_fitting, OmegaM_fitting, OmegaK_fitting = np.loadtxt("results_supernovafitting.txt", unpack=True, skiprows=1)
 Mpc = const.parsec * const.mega
 hecto = const.hecto
 kilo = const.kilo
@@ -62,19 +62,19 @@ save_fig = False
 plt.title("(n * Hp) / c")
 plt.plot(x, (eta * Hp) / c)
 if save_fig:
-    plt.savefig("Plots/Milestone_1/navn på pdf.pdf")
+    plt.savefig(r"Plots\Milestone_1\eta_Hp.pdf")
 plt.show()
 
 plt.title("1/Hp * dHpdx")
 plt.plot(x, (1/Hp) * dHpdx)
 if save_fig:
-    plt.savefig("Plots/Milestone_1/navn på pdf.pdf")
+    plt.savefig(r"Plots\Milestone_1\dHp_dx.pdf")
 plt.show()
 
 plt.title("1/Hp * ddHpddx")
 plt.plot(x, (1/Hp) * ddHpddx)
 if save_fig:
-    plt.savefig("Plots/Milestone_1/navn på pdf.pdf")
+    plt.savefig(r"Plots\Milestone_1\ddHpddx.pdf")
 plt.show()
 
 #########
@@ -82,19 +82,19 @@ plt.show()
 plt.title("Hp")
 plt.semilogy(x, Hp * (Mpc/(hecto * kilo)))
 if save_fig:
-    plt.savefig("Plots/Milestone_1/navn på pdf.pdf")
+    plt.savefig(r"Plots\Milestone_1\Hp.pdf")
 plt.show()
 
 plt.title("eta")
 plt.semilogy(x, eta * Mpc / c)
 if save_fig:
-    plt.savefig("Plots/Milestone_1/navn på pdf.pdf")
+    plt.savefig(r"Plots\Milestone_1\eta.pdf")
 plt.show()
 
 plt.title("Cosmic time")
 plt.semilogy(x, time)
 if save_fig:
-    plt.savefig("Plots/Milestone_1/navn på pdf.pdf")
+    plt.savefig(r"Plots\Milestone_1\time.pdf")
 plt.show()
 
 plt.title("Density parameters")
@@ -103,20 +103,5 @@ plt.plot(x, OmegaREL, label = "Omega R + Omega Nu")
 plt.plot(x, OmegaLambda, label = "Omega Lambda")
 plt.legend()
 if save_fig:
-    plt.savefig("Plots/Milestone_1/navn på pdf.pdf")
-plt.show()
-
-plt.plot(OmegaM_fitting, OmegaK_fitting)
-plt.show()
-
-plt.title("Cosmic time")
-plt.semilogy(x, time)
-if save_fig:
-    plt.savefig("Plots/Milestone_1/navn på pdf.pdf")
-plt.show()
-
-plt.title("Cosmic time")
-plt.semilogy(x, time)
-if save_fig:
-    plt.savefig("Plots/Milestone_1/navn på pdf.pdf")
+    plt.savefig(r"Plots\Milestone_1\Omegas.pdf")
 plt.show()

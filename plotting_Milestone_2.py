@@ -39,9 +39,7 @@ plt.show()
 
 plt.semilogy(x, Xe, label="Xe")
 plt.semilogy(x, Xe_Saha, linestyle="--", label="Xe Saha")
-plt.ylim()
 plt.legend()
-plt.show()
 if save_fig:
     plt.savefig(r"Plots\Milestone_2\Xe.pdf")
 plt.show()
