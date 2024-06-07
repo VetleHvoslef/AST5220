@@ -5,27 +5,6 @@
 #include "PowerSpectrum.h"
 #include "SupernovaFitting.h"
 
-// Test-suite, som er bygget opp på samme måte som denne main filen
-// tester for hver milestone og return 0.0 for hver milestone (eller
-// så kan den outputte not implementet for hver milestone som kommer
-// hvis computed returnerer 0.0 så skal den si not implementet)
-
-// Milestone 1:
-// - Fjern noen overflødige ting fra headeren (eller forklar hvorfor de 
-// skal være med)
-// - Bytt navn på omega-ene, alle skal være subscript 0
-
-// Milestone 2:
-// ...
-
-// Milestone 3:
-// - få koden til å fungerer hvis man bare setter polarization og neutrinos as false
-// så skal indekseringene fungerer, (kanskje setter alle de greiene til null, så man kan 
-// hente dem ut) eller bare ikke bruke dem i det hele tatt, en av to
-
-// Milestone 4:
-// - legg til i utils en trapez integral rutine, tar inn en funksjon (skriv et eksempel
-// [på samme form som den funksjonen som tar inn en source function])
 
 int main(int argc, char **argv){
   Utils::StartTiming("Everything");
@@ -54,22 +33,12 @@ int main(int argc, char **argv){
   // Module I
   //=========================================================================
 
-  // Set up and solve the background
-  // Best fit parameters, h, OmegaK, OmegaM (Omega B konst, endre på OmegaCDM = OmegaM - OmegaB)
-  // double h           = 0.67;
-  // double OmegaB      = 0.05;
-  // double OmegaCDM    = 0.267;
-  // double OmegaK      = 0.0;
-  // double Neff        = 3.046;
-  // double TCMB        = 2.7255;
   BackgroundCosmology cosmo(h, OmegaB, OmegaCDM, OmegaK, Neff, TCMB);
   cosmo.solve();
   cosmo.info();
   
   // Output background evolution quantities
   cosmo.output("cosmology.txt");
-
-  // best_params_fit_cosmology.txt
   // return 0.0;
 
   // Do the supernova fits. Uncomment when you are ready to run this

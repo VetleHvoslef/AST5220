@@ -29,16 +29,6 @@ void Perturbations::solve(){
 // and spline the results
 //====================================================
 
-// TENK LITT PÅ DETTE: Testing av kode
-/*
-using gdb to find all the variables that are created at an iteration in a "for loop"
-kan sette en verdi i starten av for løkken som jeg skal teste mot
-file:///C:/Users/vetle/Downloads/The.Art.of.Debugging.with.GDB.DDD.and.Eclipse.pdf (åpnes i nettleseren)
-- gui gdb:
-  - https://www.gdbgui.com/
-  - http://cgdb.github.io/
-*/
-
 void Perturbations::integrate_perturbations(){
   Utils::StartTiming("integrateperturbation");
 
@@ -176,27 +166,6 @@ void Perturbations::integrate_perturbations(){
         PI_array[ix][ik]        = Theta_2_array[ix][ik] + Theta_p_0 + Theta_p_2;
       }
     }
-
-    //===================================================================
-    // TODO: remember to store the data found from integrating so we can
-    // spline it below
-    //
-    // To compute a 2D spline of a function f(x,k) the data must be given 
-    // to the spline routine as a 1D array f_array with the points f(ix, ik) 
-    // stored as f_array[ix + n_x * ik]
-    // Example:
-    // Vector x_array(n_x);
-    // Vector k_array(n_k);
-    // Vector f(n_x * n_k);
-    // Spline2D y_spline;
-    // f_spline.create(x_array, k_array, f_array);
-    // We can now use the spline as f_spline(x, k)
-    //
-    // NB: If you use Theta_spline then you have to allocate it first,
-    // before using it e.g.
-    // Theta_spline = std::vector<Spline2D>(n_ell_theta);
-    //
-    //===================================================================
   }
   Utils::EndTiming("integrateperturbation");
 
@@ -256,7 +225,7 @@ Vector Perturbations::set_ic(const double x, const double k) const{
   double *Nu           = &y_tc[Constants.ind_start_nu_tc];
 
   //=============================================================================
-  // TODO: Set the initial conditions in the tight coupling regime
+  // Set the initial conditions in the tight coupling regime
   //=============================================================================
 
 
@@ -359,9 +328,6 @@ Vector Perturbations::set_ic_after_tight_coupling(
     Theta[il] = -(il / (2.0 * il + 1)) * ((c * k) / (Hp * dtaudx)) * Theta[il - 1];
   }
 
-  // TODO: Hvis setter Constants.polarization og Constants.neutrinos til False i Utils header filen så 
-  // kræsjer koden, så setter dem til True og kommenterer ut alle if testene
-
   // // SET: Photon polarization perturbations (Theta_p_ell)
   // if(polarization){
   //   // ...
@@ -422,7 +388,7 @@ void Perturbations::compute_source_functions(){
   Utils::StartTiming("source");
 
   //=============================================================================
-  // TODO: Make the x and k arrays to evaluate over and use to make the splines
+  // Make the x and k arrays to evaluate over and use to make the splines
   //=============================================================================
   Vector k_array;
   Vector k_array_lin_log = Utils::linspace(log(k_min), log(k_max), n_k);
@@ -649,11 +615,6 @@ int Perturbations::rhs_full_ode(double x, double k, const double *y, double *dyd
   double R;
   double Omega_const;
   double Psi;
-
-  // if(k*Constants.Mpc >  0.124592-0.0002 and k*Constants.Mpc <  0.124592 + 0.0002 and rand() % 100 == 0){
-  //   std::cout << "x = " << x << " " << Phi << " " << delta_b << std::endl;
-  //   if(std::abs(Phi) > 2.0) exit(1);
-  // }
 
 
   //=============================================================================

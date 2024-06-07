@@ -25,7 +25,7 @@ PowerSpectrum::PowerSpectrum(
 void PowerSpectrum::solve(){
 
   //=========================================================================
-  // TODO: Choose the range of k's and the resolution to compute Theta_ell(k)
+  // Choose the range of k's and the resolution to compute Theta_ell(k)
   //=========================================================================
   Vector k_array;
   // Vector log_k_array = log(k_array);
@@ -33,31 +33,23 @@ void PowerSpectrum::solve(){
   k_array = exp(log_k_array);
 
   //=========================================================================
-  // TODO: Make splines for j_ell. 
+  // Make splines for j_ell. 
   // Implement generate_bessel_function_splines
   //=========================================================================
   generate_bessel_function_splines();
 
   //=========================================================================
-  // TODO: Line of sight integration to get Theta_ell(k)
+  // Line of sight integration to get Theta_ell(k)
   // Implement line_of_sight_integration
   //=========================================================================
   line_of_sight_integration(k_array);
 
   //=========================================================================
-  // TODO: Integration to get Cell by solving dCell^f/dlogk = Delta(k) * f_ell(k)^2
+  // Integration to get Cell by solving dCell^f/dlogk = Delta(k) * f_ell(k)^2
   // Implement solve_for_cell
   //=========================================================================
   auto cell_TT = solve_for_cell(log_k_array, thetaT_ell_of_k_spline, thetaT_ell_of_k_spline);
   cell_TT_spline.create(ells, cell_TT, "Cell_TT_of_ell");
-  
-  //=========================================================================
-  // TODO: Do the same for polarization...
-  //=========================================================================
-  // ...
-  // ...
-  // ...
-  // ...
 }
 
 //====================================================
@@ -74,7 +66,7 @@ void PowerSpectrum::generate_bessel_function_splines(){
   double z;
     
   //=============================================================================
-  // TODO: Compute splines for bessel functions j_ell(z)
+  // Compute splines for bessel functions j_ell(z)
   // Choose a suitable range for each ell
   // NB: you don't want to go larger than z ~ 40000, then the bessel routines
   // might break down. Use j_ell(z) = Utils::j_ell(ell, z)
@@ -99,7 +91,7 @@ void PowerSpectrum::generate_bessel_function_splines(){
 // source function
 //====================================================
 
-Vector2D PowerSpectrum::line_of_sight_integration_single(// Dette kan være feil
+Vector2D PowerSpectrum::line_of_sight_integration_single(
     Vector & k_array, 
     std::function<double(double,double)> &source_function){
   Utils::StartTiming("lineofsight");
@@ -138,8 +130,7 @@ Vector2D PowerSpectrum::line_of_sight_integration_single(// Dette kan være feil
         F_ell_k = F_ell_k + ((f_x_minus_1 + f_x) / 2.0) * delta_x_ix;
       }
 
-      // Store the result for Source_ell(k) in result[ell][ik] (ble litt forvirret)
-      // skal vel store theta_l(k)?
+      // Store the result for Source_ell(k) in result[ell][ik]
       result[iell][ik] = F_ell_k;
     }
   }
@@ -160,7 +151,7 @@ void PowerSpectrum::line_of_sight_integration(Vector & k_array){
   thetaT_ell_of_k_spline = std::vector<Spline>(nells);
 
   //============================================================================
-  // TODO: Solve for Theta_ell(k) and spline the result
+  // Solve for Theta_ell(k) and spline the result
   //============================================================================
 
   // Make a function returning the source function
@@ -170,38 +161,25 @@ void PowerSpectrum::line_of_sight_integration(Vector & k_array){
 
   // Do the line of sight integration
   Vector2D thetaT_ell_of_k = line_of_sight_integration_single(k_array, source_function_T);
-  // k_array, men ikke ell array?
 
   // Spline the result and store it in thetaT_ell_of_k_spline
   for (int iell=0; iell < nells; iell++){
     thetaT_ell_of_k_spline[iell].create(k_array, thetaT_ell_of_k[iell]);
   }
-
-  //============================================================================
-  // TODO: Solve for ThetaE_ell(k) and spline
-  //============================================================================
-  // if(Constants.polarization){
-
-  //   // ...
-  //   // ...
-  //   // ...
-  //   // ...
-
-  // }
 }
 
 //====================================================
 // Compute Cell (could be TT or TE or EE) 
 // Cell = Int_0^inf 4 * pi * P(k) f_ell g_ell dk/k
 //====================================================
-Vector PowerSpectrum::solve_for_cell( // C_ell til neste gang :)
+Vector PowerSpectrum::solve_for_cell(
     Vector & log_k_array,
     std::vector<Spline> & f_ell_spline,
     std::vector<Spline> & g_ell_spline){
   const int nells      = ells.size();
 
   //============================================================================
-  // TODO: Integrate C_ell = Int 4 * pi * P(k) f_ell g_ell dk/k
+  // Integrate C_ell = Int 4 * pi * P(k) f_ell g_ell dk/k
   // or equivalently solve the ODE system dCell/dlogk = 4 * pi * P(k) * f_ell * g_ell
   //============================================================================
   Vector result = Vector(ells.size());
@@ -287,8 +265,8 @@ void PowerSpectrum::output(std::string filename) const{
   auto print_data = [&] (const double ell) {
     double normfactor  = (ell * (ell+1)) / (2.0 * M_PI) * pow(1e6 * cosmo->get_TCMB(), 2);
     double normfactorN = (ell * (ell+1)) / (2.0 * M_PI) 
-      * pow(1e6 * cosmo->get_TCMB() *  pow(4.0/11.0, 1.0/3.0), 2); // Dette her blir ikke brukt?
-    double normfactorL = (ell * (ell+1)) * (ell * (ell+1)) / (2.0 * M_PI); // Dette her blir ikke brukt?
+      * pow(1e6 * cosmo->get_TCMB() *  pow(4.0/11.0, 1.0/3.0), 2);
+    double normfactorL = (ell * (ell+1)) * (ell * (ell+1)) / (2.0 * M_PI);
     fp << ell                                 << " ";
     fp << cell_TT_spline( ell ) * normfactor  << " ";
     // if(Constants.polarization){

@@ -1,14 +1,6 @@
 #include "BackgroundCosmology.h"
 
 
-// Spørsmål: Hvor bør PI defineres fra cmath, i Utils.h under // Physical constants, kanskje mer // Mathematical constants:
-// - https://stackoverflow.com/questions/1727881/how-to-use-the-pi-constant-in-c
-// - https://stackoverflow.com/questions/6563810/m-pi-works-with-math-h-but-not-with-cmath-in-visual-studio
-// - _USE_MATH_DEFINES properly with cmath, men jeg er uvant med å bruke header filer
-// spør Kjell og co?
-
-// Spør Kjell med access denied, git pull i Ubuntu on Windows
-
 //====================================================
 // Constructors
 //====================================================
@@ -34,9 +26,7 @@ BackgroundCosmology::BackgroundCosmology(
 
   H0 = h * H0_over_h;
 
-  // Check: Sjekk at alle omegene summer opp til 1
   OmegaR = 2 * (pow(M_PI, 2.0) / 30.0) * (pow((k_b * TCMB), 4.0) / (pow(hbar, 3.0) * pow(c, 5.0))) * ((8.0 * M_PI * G) / (3 * pow(H0, 2.0)));
-  // Hvor skal dotten være for at den skal skjønne at det ikke er heltallsdivisjon? 8. kontra 8.0
   OmegaNu = Neff * (7.0/8) * pow((4.0/11), (4.0/3)) * OmegaR;
   OmegaK = 0;
   OmegaLambda = 1 - (OmegaK + OmegaB + OmegaCDM + OmegaR + OmegaNu);
@@ -79,7 +69,7 @@ void BackgroundCosmology::solve(){
   //=============================================================================
 
   H_ini = H_of_x(x_start);
-  Vector eta_ic{c / H_ini}; // Spørsmål: Skjønner ikke denne koden her, prøvde eta_ic = c / H_ini med Vector eta_ic sammen med de andre deklarasjonene
+  Vector eta_ic{c / H_ini};
   ode_eta.solve(detadx, x_array, eta_ic);
   auto eta_array = ode_eta.get_data_by_component(0);
 
@@ -158,7 +148,7 @@ double BackgroundCosmology::ddHpddx_of_x(double x) const{
 }
 
 double BackgroundCosmology::get_OmegaB(double x) const{ 
-  if(x == 0.0) return OmegaB; // Spørsmål: Forandre til OmegaB0 for alle omega-ene, etter fristen
+  if(x == 0.0) return OmegaB;
 
   double OmegaB_x;
   double H = H_of_x(x);

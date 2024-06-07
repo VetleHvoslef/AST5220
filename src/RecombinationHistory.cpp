@@ -39,7 +39,6 @@ void RecombinationHistory::solve_number_density_electrons(){
   Vector Xe_Saha_arr;
   Vector ne_arr;
 
-  // Spørsmål: Antar dette her?
   x_array = Utils::linspace(x_start, x_end, npts_rec_arrays);
   Xe_arr = Utils::linspace(x_start, x_end, npts_rec_arrays);
   Xe_Saha_arr = Utils::linspace(x_start, x_end, npts_rec_arrays);
@@ -113,7 +112,6 @@ void RecombinationHistory::solve_number_density_electrons(){
   Vector log_ne_arr = log(ne_arr);
   Vector log_Xe_Saha_arr = log(Xe_Saha_arr);
 
-  // log_Xe_of_x_spline.create(x_array, log(Xe_arr)); // Hvorfor funker ikke dette?
   log_Xe_of_x_spline.create(x_array, log_Xe_arr);
   log_ne_of_x_spline.create(x_array, log_ne_arr);
   log_Xe_Saha_of_x_spline.create(x_array, log_Xe_Saha_arr);
