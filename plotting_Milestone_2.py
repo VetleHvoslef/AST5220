@@ -2,17 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# TODO: Ordne en computing python fil
-
-# Computing, legg inn en python fil med alt, printer milestone 1 og gir alt 
-# Compute the times (xdecoupling, zdecoupling, tdecoupling) for the last scattering surface surface and for when recombination happens.
-# You can use the definition τ=1 or as the time when visibility function peaks for when last scattering happens.
-# You can use the definition Xe=0.1 for when recombination happens.
-
-# Compare these numbers with the prediction from the Saha equation. Compute the freeze-out abundance of free electrons today Xe(x=0)
-# . If you include reionization compute these numbers with reionization turned off (15p).
-# Compute the sound-horizon at decoupling rs (5p).
-
 save_fig = False
 
 x, Xe, Xe_Saha, ne, tau, dtaudx, ddtauddx, g_tilde, dgdx, ddgddx = np.loadtxt("recombination.txt", unpack=True)
@@ -45,5 +34,14 @@ if save_fig:
 plt.show()
 
 
+# TODO: Ordne en computing python fil
 
+# Computing, legg inn en python fil med alt, printer milestone 1 og gir alt 
+# Compute the times (xdecoupling, zdecoupling, tdecoupling) for the last scattering surface surface and for when recombination happens.
+# You can use the definition τ=1 or as the time when visibility function peaks for when last scattering happens.
+# You can use the definition Xe=0.1 for when recombination happens.
+
+# Compare these numbers with the prediction from the Saha equation. Compute the freeze-out abundance of free electrons today Xe(x=0)
+# . If you include reionization compute these numbers with reionization turned off (15p).
+# Compute the sound-horizon at decoupling rs (5p).
 
