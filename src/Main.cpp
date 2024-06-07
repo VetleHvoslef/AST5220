@@ -67,7 +67,7 @@ int main(int argc, char **argv){
   cosmo.info();
   
   // Output background evolution quantities
-  // cosmo.output("cosmology.txt");
+  cosmo.output("cosmology.txt");
 
   // best_params_fit_cosmology.txt
   // return 0.0;
